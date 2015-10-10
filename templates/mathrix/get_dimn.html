@@ -1,0 +1,39 @@
+{#-*- engine:django -*-#}
+{% extends "mathrix/front.html" %}
+
+
+{% block inputblock %}
+
+  {% if q == 'solve' %}{% set num = 2 %}{% endif %}
+  
+  <form method="post" id="dimn-form">
+    
+    <div class="row greenborder vertical-flex-container">
+
+      Expression to be evaluated <em>{{ exp }}</em>
+      
+      <div class="col-md-6 greenborder vertical-flex-container setcustomtext">
+	{% for i in range(num if q in ['mult', 'evaluate'] or num else 1) %}
+	  <div class="greenborder">
+	    Enter the dimension of the matrix{% if q == 'mult' %} {{i + 1}}{% endif %}
+	    {% if q == 'evaluate' %} {{ unknowns[i] }} {% endif %}
+	  </div>
+	  <div class="rows greenborder">
+    	    <paper-input name="r{{ i }}" type="number" label="r{{ i }}" min="1" max="10" auto-validate required>
+	  </div>
+	  <div class="columns greenborder">
+    	    {% if q not in square %}<paper-input name="c{{ i }}" type="number" label="c{{ i }}" min="1" max="10" auto-validate required>{% endif %}</div>
+	{% endfor %}
+	<div class="error"> {{error}} </div>
+	<div>
+	  <paper-button raised id="paper-submit" onclick="this.getElementsByTagName('button')[0].click();" style="background: #03A9F4; color: white;"><button type="submit">Enter</button></paper-button>
+	</div>
+      </div> <!-- col-md-6 -->
+      <input type="hidden" name="num" value="{{ num }}">
+      <input type="hidden" name="q" value="{{ q }}">
+    </div> <!-- row -->
+
+    <input type="hidden" name="user_id" value="{{ user_id }}">
+  </form>
+
+{% endblock %}

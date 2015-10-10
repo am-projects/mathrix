@@ -1,0 +1,123 @@
+{#-*- engine:django -*-#}
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Mathrix</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href='http://fonts.googleapis.com/css?family=Rajdhani|Exo+2:400,100,200,300,500|Roboto:300' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/static/css/stylesheet.css">
+		<link href="/static/css/simple-sidebar.css" rel="stylesheet">
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script>
+		$("#menu-toggle").click(function(e) {
+			e.preventDefault();
+			$("#wrapper").toggleClass("toggled");
+		});</script>
+
+		
+		<script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+		<link rel="import" href="../bower_components/paper-button/paper-button.html">
+		<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+		<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+		
+		{% block latex %}
+		{% endblock %}
+
+	</head>
+
+	<body>
+		<div id="wrapper" class="toggled">
+			<div class="container-fluid greenborder">
+				<div class="row greenborder">
+					<a href="/mathrix" id="website" style="text-decoration:none">
+						<h1 class="text-center col-md-12">MATHRIX</h1></a>
+				</div>  
+				<div class="row greenborder">  
+					<h3 class="text-center col-md-12">THE MATRIX CALCULATOR</h3>
+				</div>
+				<br>
+				<br>
+				<!-- Checks if an operation has been called for and renders accordingly -->
+				
+				{% if q %}
+					{# <!--
+					{% for op in f %} 
+					<button type="button" class="btn btn-default operation-{{ op[1] }}"> 
+  					<a href="/mathrix/?q={{ op[1] }}">{{ op[0] }}</a></button>
+  					{% endfor %} -->
+					<div id="sidebar-wrapper">
+						<ul class="sidebar-nav">
+							<li class="sidebar-brand">
+								<a href="#">
+									More Calculations
+								</a>
+							</li>
+							{% for op in f %}
+								<li>
+									<a href="/mathrix/?q={{ op[1] }}">{{ op[0] }}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					</div> <!-- /#sidebar-wrapper -->
+					#}
+				{% endif %}
+
+				<!-- Block gets replaced when the HTML file is inherited by another containing the same block -->
+				
+				<div class="content">
+					{% block inputblock %}
+						<paper-button raised> Does it Work? </paper-button>
+						<a href="/mathrix/evaluate"><paper-button raised>Evaluate Expression</paper-button></a>
+						<!-- Grid for frontpage -->
+          					{% for i in range((f|length // 3) + 1) %}  <!-- Iterate through  0 - length(f) / 3 -->
+          						<div class="row flex-container greenborder">
+          							<div class="col-md-6 flex-container greenborder">
+          								{% for op in f[(3 * i):(3 * i + 3)] %} <!-- Iterate through the next 3 operaions -->	    
+          									<a href="/mathrix/?q={{ op[1] }}"><button type="button" class="btn btn-default operation-{{ op[1] }}">{{ op[0] }}</button></a>
+          								{% endfor %}
+          							</div>
+          						</div>
+          					{% endfor %}
+
+  						<!-- Frontpage message-->
+						<div class="about text-center">
+      							Want to calculate RREF of a 5x5 matrix?  Want to multiply 2  matrices? You can use this calculator and avoid all tedious computations.</div>
+					{% endblock %}
+				</div> 
+				<div>
+					<p class="note row">Note: This website is still in testing phase and much of the CSS styling is left</p>
+				</div>
+
+				<a href="/mathrix/evaluate"><paper-fab mini icon="create"></paper-fab></a>
+
+				<footer>
+					&copy; Arshia and Milap. 2015
+				</footer>
+			</div>
+		</div>
+		<!-- jQuery and JavaScript-->
+		<script src="js/jquery.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<!-- Menu Toggle Script -->
+		<script>
+		$("#menu-toggle").click(function(e) {
+			e.preventDefault();
+			$("#wrapper").toggleClass("toggled");
+		});
+		</script>
+	</body>
+</html>
+
+<!--
+TODO:
+1. add dropdown for "enter dimension" (?) check w milap
+2. add sidebar + transition somehow
+3. add css to input.html - on TUESDAY
+4. add css to result and domain page
+5. fix the footer
+6. add modals + embed latex somehow (download/compile bootstrap.min.js)
+7. decide on color scheme/background
+-->

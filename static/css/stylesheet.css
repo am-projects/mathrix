@@ -1,0 +1,208 @@
+/*.greenborder{
+  border: 1px solid green;
+  
+}
+* {
+    border: 1px solid purple !important;
+}*/
+.row-container{
+  display:flex;
+  flex-direction: column;
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+h1{
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 100;
+	font-size: 115px;
+	margin: 0px;
+}    
+
+h3{
+	font-family: 'Exo 2', sans-serif;
+	font-size: 30px;
+	font-weight: 100;
+	margin: 0px;
+}
+
+.setcustomtext{
+  font-size: 30px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 200;
+
+}
+
+.col-centered{
+    float: none;
+    margin: 0 auto;
+}
+
+#div1 {
+width: 50%;
+margin: 0px auto 0px auto} /* (probably?) delete this */
+
+
+.newclass {width:25%; display:block; margin: 0 auto;} /* (probably?) delete this */
+
+ 
+.vertical-flex-container{
+  display: -webkit-box; 
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  flex-flow: column nowrap; /* define flow direction*/
+  justify-content: space-around;
+  align-items: center;  /*define how items are distributed */
+  align-content: space-around;
+} 
+.flex-container {
+  display: -webkit-box; 
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  /*flow direction is row nowrap by default*/
+  justify-content: space-around; /* define how items are distributed */
+  align-items: center;
+  /*
+  resize: vertical;
+  overflow: auto; -- figure out why this is getting messed up
+  */ 
+}
+
+ button:hover {
+  opacity: 0.75;
+}
+
+button[type="button"]{ /*FIX THIS, COMBINE WITH SUBMIT*/
+    background: #428BCA;
+    color: #000000;
+    font-family: 'Exo 2' Sans-serif;
+    font-weight: 300;
+    font-size: 20px;
+    height: 60px;
+    width: 150px;
+    margin: 25px 25px;
+    text-align: center;
+    border: 0;
+    transition: all 0.3s ease 0s;
+    text-transform: uppercase;
+    opacity: 1;
+}
+
+input[type="submit"] {
+    background: #428BCA;
+    color: #000000;
+    font-family: 'Exo 2' Sans-serif;
+    font-weight: 300;
+    font-size: 20px;
+    /*height: 40px;
+    width: flex;*/
+    margin: 25px 25px;
+    text-align: center;
+    border: 0;
+    transition: all 0.3s ease 0s;
+    text-transform: uppercase;
+}
+
+input[type="number"] {
+  font-family: 'Exo 2' Sans-serif;
+  font-weight: 300;
+    font-size: 20px;
+    height: 40px;
+    width: 100px;
+    margin: 10px;
+}
+
+
+.custom-table{  
+  margin: 10px;
+}
+
+.matrix-cell{
+  height: 50px;
+  width: 50px;
+  margin: 3px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 300;
+  font-size: 20px;
+
+}
+
+.note {
+    position: relative;
+    text-align: center;
+    margin-top: 50px;
+}
+
+footer {
+    font-size: 15px;
+    position: relative;
+    text-align: right;
+}
+
+table.result {
+    margin-left: 10px;
+    margin-right: 10px;
+    float: left;
+    width: 150px;
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+table.solution {
+    float: right;
+    width: 150px;
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+.out {
+    width: 450px;
+}
+
+.steps {
+    margin-top: 100px;
+    margin-bottom: 100px;
+}
+
+.fab {
+    position: absolute;
+    right: 10%;
+    bottom: 15%;
+}
+
+#eval-button {
+    width: 15%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#eval-form {
+    width: 25%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card-content {
+    margin: 0px;
+    padding: 20px;
+}
+
+
+/*
+tr.result, td.result {
+    border: 1px solid black;
+}
+
+tr.solution, td.solution {
+    border: 1px solid black;
+}
+*/

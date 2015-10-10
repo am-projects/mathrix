@@ -1,0 +1,15 @@
+{#-*- engine:django -*-#}
+
+{% extends "mathrix/front.html" %}
+
+{% block addons %}
+  <link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
+{% endblock %}
+
+{% block inputblock %}
+
+  <div style="align: center">
+    <paper-spinner active></paper-spinner>
+  </div>
+  
+{% endblock %}

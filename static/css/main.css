@@ -1,0 +1,33 @@
+body {
+    text-align: center; }
+
+.input {
+    margin-bottom: 10px; }
+
+footer {
+    font-size: 15px;
+    position: absolute;
+    right: 20px;
+    bottom: 30px; }
+
+table {
+    margin-left: auto;
+    margin-right: auto; }
+
+table.result, th.result, td.result {
+    border: 1px solid black; }
+
+td {
+    padding: 5px; }
+
+.note {
+    position: absolute;
+    bottom: 40px;
+    left: 400px; }
+
+.new {
+    margin-bottom: 10px; }
+
+#website {
+    text-decoration: none;
+    color: black; }
