@@ -108,30 +108,6 @@
 	<br>
 	<!-- Checks if an operation has been called for and renders accordingly -->
 
-	
-	{% if q %}
-	  {# <!--
-	  {% for op in f %} 
-	  <button type="button" class="btn btn-default operation-{{ op[1] }}"> 
-  	  <a href="/mathrix/?q={{ op[1] }}">{{ op[0] }}</a></button>
-  	  {% endfor %} -->
-	  <div id="sidebar-wrapper">
-	  <ul class="sidebar-nav">
-	  <li class="sidebar-brand">
-	  <a href="#">
-	  More Calculations
-	  </a>
-	  </li>
-	  {% for op in f %}
-	  <li>
-	  <a href="/mathrix/?q={{ op[1] }}">{{ op[0] }}</a>
-	  </li>
-	  {% endfor %}
-	  </ul>
-	  </div> <!-- /#sidebar-wrapper -->
-	  #}
-	{% endif %}
-
 	<!-- Block gets replaced when the HTML file is inherited by another containing the same block -->
 	
 	<div class="content">
@@ -140,11 +116,22 @@
 	    <div id="eval-button"><a href="/mathrix/evaluate"><paper-button raised>Evaluate Expression</paper-button></a></div>
 	    
 	    <!-- Grid for frontpage -->
-            {% for i in range((f|length // 3) + 1) %}  <!-- Iterate through  0 - length(f) / 3 -->
+            
+             <div class="row flex-container greenborder">
+          	<div class="col-md-6 flex-container greenborder">
+          	  {% for op in f[:3] %} <!-- Iterate through the next 3 operaions -->	    
+          	    <a href="/mathrix/num?q={{ op[1] }}">
+                      <button type="button" class="btn btn-default operation-{{ op[1] }}">{{ op[0] }}</button>
+                    </a>
+          	  {% endfor %}
+          	</div>
+             </div>
+             
+            {% for i in range(1, (f|length // 3) + 1) %}  <!-- Iterate through  0 - length(f) / 3 -->
               <div class="row flex-container greenborder">
           	<div class="col-md-6 flex-container greenborder">
           	  {% for op in f[(3 * i):(3 * i + 3)] %} <!-- Iterate through the next 3 operaions -->	    
-          	    <a href="/mathrix/?q={{ op[1] }}">
+          	    <a href="/mathrix/{{ op[1] }}">
                       <button type="button" class="btn btn-default operation-{{ op[1] }}">{{ op[0] }}</button>
                     </a>
           	  {% endfor %}

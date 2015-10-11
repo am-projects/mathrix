@@ -7,15 +7,14 @@
 {% block inputblock %}
   
   <div id="page-content-wrapper">
-    <form id="dimn-form" action="/mathrix/{{ q }}">
+    <form id="dimn-form" action="/mathrix/">
       <div class="row greenborder vertical-flex-container">
 	<div class="col-md-6 greenborder vertical-flex-container">
 	  <h3 class= "greenborder">Enter number of matrices to {{ q }}</h3>
 	  <paper-input class="greenborder" type="number" name="num" min="2" max="10" required></paper-input>
+	  <input type="hidden" name="q" value="{{ q }}">
 
-	  <paper-button id="paper-submit" raised onclick="this.getElementsByTagName('button')[0].click();" style="background: #03A9F4; color: white; width: 15%; height: 10%">
-            <button type="submit">Enter</button>
-          </paper-button>
+	  <paper-button id="paper-submit" raised onclick="this.getElementsByTagName('button')[0].click();" style="background: #03A9F4; color: white; width: 15%; height: 10%"><button type="submit">Enter</button></paper-button>
 
 	</div>
       </div>

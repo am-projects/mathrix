@@ -166,7 +166,7 @@ class InputHandler(Handler):
         logging.info("Operation called: %s", q)
         num = 1 if q in single else num
 
-        user_id = self.request.get('user_id') or users.addUser(Expression(q=q, n=int(num)))
+        user_id = self.request.get('user_id') or users.addUser(Expression(q=q, n=int(num), exp=self.request.get('eval')))
 
         try:
             Exp = self.Exp = users.getUser(int(user_id))
@@ -176,7 +176,7 @@ class InputHandler(Handler):
 
         logging.info("Created user - %s", int(user_id))
 
-        self.render("get_dimn.html", num=Exp.n, q=q, user_id=user_id,
+        self.render("get_dimn.html", num=Exp.n if num else '', q=q, user_id=user_id,
                     double=double, exp=Exp.getExp(), unknowns=Exp.getVars())
 
     def get(self, q):

@@ -13,7 +13,7 @@
       Expression to be evaluated <em>{{ exp }}</em>
       
       <div class="col-md-6 greenborder vertical-flex-container setcustomtext">
-	{% for i in range(num if q in ['mult', 'evaluate'] or num else 1) %}
+	{% for i in range(1 if q in ['add', 'sub'] else num) %}
 	  <div class="greenborder">
 	    Enter the dimension of the matrix{% if q == 'mult' %} {{i + 1}}{% endif %}
 	    {% if q == 'evaluate' %} {{ unknowns[i] }} {% endif %}

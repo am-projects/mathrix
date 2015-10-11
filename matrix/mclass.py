@@ -51,6 +51,9 @@ class Matrix(object):
     def __len__(self):
         return len(self.M)
 
+    def __repr__(self):
+        return repr(self.M)
+
     def clen(self):
         return len(self.M[0])
 
@@ -132,10 +135,10 @@ def parse(exp):
 
 class Expression(object):
     def __init__(self, q='', exp='', n=1):
-        if q:
+        if not exp:
             var = [chr(x) for x in xrange(65, 65 + n)]
             if q in ['add', 'sub', 'mult']:
-                self.exp = ('%s' % {'add':'+', 'sub':'-', 'mult':'-'}[q]).join(var)
+                self.exp = ('%s' % {'add':'+', 'sub':'-', 'mult':'*'}[q]).join(var)
             else:
                 self.exp = q + '(' + ','.join(var) + ')'
             self.pretty_exp = repr(self)
