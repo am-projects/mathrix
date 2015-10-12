@@ -157,7 +157,7 @@ class Expression(object):
 
         exp = r''.join(self.exp.split())
         exp = re.sub(r"[*]{2}", r"^", exp)
-        exp = r''.join(exp.split('*'))
+        # exp = r''.join(exp.split('*'))
         exp = re.sub(r"\^([-]?\d+)", lambda x: "^{%s}" % x.group(1), exp)
         return exp
 

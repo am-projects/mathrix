@@ -22,10 +22,10 @@ class Handler(webapp2.RequestHandler):
 class MainHandler(Handler):
 
     def get(self):
-        self.render("polymertest.html")
+        self.render("tryside.html")
 # self.redirect('/mathrix')
         # self.response.write("Hello World!!")
 
 app = webapp2.WSGIApplication([
-    ('/.*', MainHandler)
+    ('/', MainHandler)
 ], debug=True)

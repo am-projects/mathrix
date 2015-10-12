@@ -7,6 +7,9 @@ class Session(object):
         self.store = {}
         self.users = 0
 
+    def scramble(self):
+        pass
+
     def addUser(self, Exp):
         self.users += 1
         user_id = self.users

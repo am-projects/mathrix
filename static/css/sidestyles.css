@@ -1,0 +1,55 @@
+/*
+
+#site-wrapper, is used to hide elements that overflow outside of it. 
+The reason we need to hide overflowed elements on a wrapper instead of the body is so that we don’t mess up scrolling. 
+Try putting overflow: hidden; on a body tag and see what happens to scrolling.
+
+By having the wrapper, you can actually specify how large you want the Off Canvas Menu block to be. 
+This example is going to be full width, but you can essentially make it any size you want.
+
+*/
+
+#site-wrapper {
+position: relative;
+overflow: hidden;
+width: 100%;
+
+/*height: 5000px;  Temp: Simulates a tall page. */
+}
+
+/*The #site-canvas is the actual element moving left and right. 
+We’ll set a transition on it for doing a smooth animation, and we’ll also be just setting the transform property in preparation for movement. 
+The technique we are using uses CSS3 Transforms to move the canvas instead of JavaScript.
+*/
+
+#site-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  -webkit-transform: translateX(0);
+  transform: translateX(0);
+  -webkit-transition: .3s ease all;
+  transition: .3s ease all;
+
+  padding: 5% 0; /* Temp: Just spacing. */
+}
+
+#site-menu {
+  width: 300px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: -300px;
+  background: #428bca;
+  padding: 15px;
+}
+
+/*The idea behind the animation is simple. When you want the menu to slide out, we’ll add a class to the wrapper, 
+then just add properties doing a smooth transition to slide the canvas over. In order to add that class to the wrapper, we’ll have to use JavaScript though. */
+
+#site-wrapper.show-nav #site-canvas {
+  -webkit-transform: translateX(300px);
+  transform: translateX(300px);
+}
+
+

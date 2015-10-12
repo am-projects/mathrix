@@ -58,8 +58,8 @@
       </div>
       {% if q in detailed %}
 	<div class="detail">
-	  <input type="hidden" name="detail">
-	  <paper-checkbox onclick="var bool = document.getElementsByName('detail')[0].value; document.getElementsByName('detail')[0].value = !bool;">Show Detailed Solution</paper-checkbox>
+	  <input type="hidden" name="detail" id="detail" value="true">
+	  <paper-checkbox onclick="var bool = document.getElementById('detail').value; document.getElementById('detail').value = (this.checked ? 'false': 'true');">Show Detailed Solution</paper-checkbox>
 	</div>
       {% endif %}
       <div class="submit flex-container greenborder">

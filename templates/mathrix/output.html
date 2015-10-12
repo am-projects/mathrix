@@ -10,16 +10,29 @@
   </script>
 
   <link rel="import" href="../bower_components/paper-card/paper-card.html">
-  <!-- link rel="import" href="../bower_components/neon-animation/neon-animations.html">
-  <link rel="import" href="../bower_components/neon-animation/animations/fade-in-animation.html">
-  <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
-  <link rel="import" href="../bower_components/neon-animation/neon-animatable.html">
-  <link rel="import" href="../bower_components/neon-animation/neon-animated-pages.html" -->
+  <link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+  {% if q in detailed %}
+    {# <script language="javascript" type="text/javascript" src="/static/js/output.js"></script> #}
+
+    <script type="text/javascript">
+    function showHide(dom) {
+      document.getElementById('result-small').style.display =  dom.active ? 'none' : 'block';
+      document.getElementById('result-full').style.display =  dom.active ? 'block' : 'none';
+    }
+    </script>
+  {% endif %}
 
   <style is="custom-style">
   paper-card {
     background-color: var(--paper-light-blue-300);
     width: 100%;
+  }
+  #detail {
+    background: var(--paper-light-green-300);
+  }
+  #detail[toggles][active] {
+    background: var(--paper-light-green-500);
   }
   </style>
 
@@ -35,14 +48,28 @@
 
     <div style="margin: auto;"><paper-card heading="$$ \textit{Result} $$" elevation="1">
       <div class="card-content">
-        <div class="final">
+        <paper-button id="detail" onclick="showHide(this); this.active = this.active ? 'true' : ''" toggles>Show Detailed Solution</paper-button>
+        <div class="final" id="result-small">
+          {% for p in range(ans|length) %}
+	    \begin{bmatrix}
+	    {% for i in ans[p] %}
+	      {% set row = loop %}
+	      {% for j in i %}
+	        {% if j != '' and j is number and j.is_integer() %}{{ j|int }}{% else %}{{ j }}{% endif %} {% if not loop.last %}&{% endif %}
+	      {% endfor %}
+	      {% if not loop.last %}\\{% endif %}
+	    {% endfor %}
+	    \end{bmatrix}
+          {% endfor %}
+        </div>
+        <div class="final" id="result-full" style="display: none">
 	  \begin{array}{c{% if steps %}cc{% endif %}}
 	  
 	  {% if q == 'evaluate' %} {{ exp }} {% else %} A {% endif %} {% if soln %} & {% if 1 == soln[0][0]|length %} \vec{b} {% else %} B {% endif %} {% endif %} {% if steps %} & \text{Row Operations} {% endif %} \\
 	  
-	  {% for p in range(values|length) %}
+	  {% for p in range(ans|length) %}
 	    \begin{bmatrix}
-	    {% for i in values[p] %}
+	    {% for i in ans[p] %}
 	      {% set row = loop %}
 	      {% for j in i %}
 	        {% if j != '' and j is number and j.is_integer() %}{{ j|int }}{% else %}{{ j }}{% endif %} {% if not loop.last %}&{% endif %}
@@ -68,13 +95,11 @@
 	      &
 	      {{ steps[p] | safe }}
 	    {% endif %}
-	    
 	    {% if not loop.last %} \\ {% endif %}
 	  {% endfor %}
 	  \end{array}
 
-	  {# <!--To show the spanning solution set  --> #}
-	  
+	  <!-- To show the spanning solution set -->
 	  {% if span %}
 	    
 	    \begin{matrix}
@@ -108,7 +133,7 @@
   {% else %}
 
     <div class="error">
-      $$ \textit{ {{ values }} } $$
+      $$ \textit{ {{ ans }} } $$
     </div>
 
   {% endif %}

@@ -88,11 +88,13 @@ users = Session()
 def beautify(matrices):		# To display fractions
     if not matrices:
         return
-    for A in matrices:
+    M = [[[i for i in row] for row in A] for A in matrices]
+    for A in M:
         for i in xrange(len(A)):
             for j in xrange(len(A[0])):
                 if not isinstance(A[i][j], str):
                     A[i][j] = func.make_frac(A[i][j])
+    return M
 
 
 class Handler(webapp2.RequestHandler):
@@ -164,7 +166,7 @@ class InputHandler(Handler):
             return self.home()
 
         logging.info("Operation called: %s", q)
-        num = 1 if q in single else num
+        num = 1 if q in single else (num or 2)
 
         user_id = self.request.get('user_id') or users.addUser(Expression(q=q, n=int(num)))
 
@@ -197,7 +199,9 @@ class InputHandler(Handler):
     def get_dim(self):
         q = self.Exp.q
         num = self.Exp.n
-        dim = self.Exp.dim = []
+        dim = self.Exp.dim
+        if dim and dim[0][0]:
+            return
         for i in xrange(num if q not in primary else 1):
             m = self.request.get('r' + str(i))
             # If operation works on only square matrices
@@ -298,11 +302,14 @@ class MatrixHandler(Handler):
         except KeyError:
             logging.error("Wrong Key: %s", user_id)
             return self.home()
+        logging.info("Initialized MatrixHandler")
         self.log()
 
     def getMatrices(self):
         dim = self.Exp.dim
         matrices = self.Exp.matrices
+        if matrices and matrices[0][0][0]:
+            return ''
 
         error = ''
         for p, (r, c) in enumerate(dim):
@@ -351,9 +358,8 @@ class MatrixHandler(Handler):
 """
     def get(self):
         logging.info("MatrixHandler: GET")
-        user_id = self.request.get('user_id')
-        self.render("input.html", user_id=user_id, error=self.Exp.error, matrices=self.Exp.matrices,
-                    exp=self.Exp.exp, unknowns=self.Exp.getVars())
+        self.render("input.html", user_id=self.user_id, error=self.Exp.error, matrices=self.Exp.matrices,
+                    q=self.Exp.q, exp=self.Exp.exp, unknowns=self.Exp.getVars())
 
     def post(self):
         logging.info("MatrixHandler: POST")
@@ -405,18 +411,21 @@ class OutputHandler(Handler):
 
     # Performs the actual calculation
     def calc(self, op, matrices):
+        logging.info("Input matrices: %s", matrices)
         f = getattr(func, op)
-        if op == 'solve':
+        if op in detailed:
             return f(*matrices)
         result = f(*matrices[:2])
         for A in matrices[2:]:
             result = f(result, A)
         return result
-    
+
     def post(self):
+        logging.info("OutputHandler: POST")
         self.get()
 
     def get(self):
+        logging.info("OutputHandler: GET")
         Exp = self.Exp
         matrices = Exp.matrices
 
@@ -426,39 +435,43 @@ class OutputHandler(Handler):
         op = Exp.q
         logging.info('Operation %s to be executed' % op)
         soln, steps, error, span = None, None, None, None
+        logging.info("Loading...")
         self.render("loading.html")
-
+        logging.info("In detailed? (%s)", op)
+        logging.info("Detailed option: %s", self.request.get('detail'))
         try:
             if op == 'evaluate':
                 logging.info('Evaluating %s', Exp.exp)
 
                 ans = [mclass.evaluate(Exp, {k: v for k, v in zip(Exp.getVars(), matrices)})]
-            elif op in detailed and self.request.get('detail'):
-                matrices.append(True)
-                ans, steps, soln = self.calc(op, matrices)
+            elif op in detailed:
+                logging.info("Detailed solution for %s", op)
+                # matrices.append(True)
+                ans, steps, soln = self.calc(op, matrices + [True])
                 if op in solvable:
                     span = func.span(ans[-1], soln[-1])
-                    beautify([span])
-                beautify(soln)
+                    span = beautify([span])[0]
+                soln = beautify(soln)
             else:
+                logging.info("Calculating result")
                 ans = [self.calc(op, matrices)]
                 if op in solvable:
                     span = ans[0]
-                    beautify([span])
+                    span = beautify([span])[0]
                     ans, soln = [matrices[0]], [matrices[1]]
-                    beautify(soln)
-            beautify(ans)
+                    soln = beautify(soln)
+            ans = beautify(ans)
         except Exception as inst:
             error = True
             logging.error("Calculation Error " + repr(inst))
             ans = inst.args[0]
         except:
             self.home()
-
-        logging.error(steps)
+        logging.info("Calculated result")
+        # logging.error(steps)
         msg = "The result is"
         self.response.clear()	 # To clear the 'loading' response
-        self.render("output.html", msg=msg, values=ans, steps=steps,
+        self.render("output.html", msg=msg, ans=ans, steps=steps,
                     soln=soln, error=error, span=span, q=op, exp=Exp.getExp())
 
 
