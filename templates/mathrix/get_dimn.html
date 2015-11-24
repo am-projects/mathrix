@@ -26,7 +26,7 @@
 	{% endfor %}
 	<div class="error"> {{error}} </div>
 	<div>
-	  <paper-button raised id="paper-submit" onclick="this.getElementsByTagName('button')[0].click();" style="background: #03A9F4; color: white;"><button type="submit">Enter</button></paper-button>
+	  <paper-button raised id="paper-submit" onclick="paperSubmit(this)" style="background: #03A9F4; color: white;"><button type="submit">Enter</button></paper-button>
 	</div>
       </div> <!-- col-md-6 -->
       <input type="hidden" name="num" value="{{ num }}">

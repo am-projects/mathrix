@@ -1,27 +1,37 @@
+import hmac
+import hashlib
+
+from error import Error
+
+SECRET = 'QWERTY' # open('/matrix/secret.txt').read()
+
+
+# Encrypt user id preventing change between user sessions
+
+def encrypt(val):
+    return hmac.new(SECRET, str(val), hashlib.sha256).hexdigest()
+
+
 # Storage class to create and track user sessions
 
 class Session(object):
-    MAX_SIZE = 10000
+    MAX_SIZE = 10000	# Maximum number of active connections
 
     def __init__(self):
         self.store = {}
-        self.users = 0
-
-    def scramble(self):
-        pass
+        self.users = 1
 
     def addUser(self, Exp):
-        self.users += 1
-        user_id = self.users
-        if self.users > self.MAX_SIZE:
-            user_id = self.users = 1
+        self.users = (self.users % self.MAX_SIZE) + 1
+        user = encrypt(self.users)
+        self.store[user] = Exp
+        return user
 
-        self.store[user_id] = Exp
-        return user_id
+    def getUser(self, user):
+        if self.store.get(user) is None:
+            raise KeyError("User session cannot be validated. <a href='/mathrix'>Return</a> to the main page")
+        else:
+            return self.store[user]
 
-    def getUser(self, user_id):
-        return self.store[user_id]
-
-    def removeUser(self, user_id):
-        self.users -= 1
-        self.store.pop(user_id)
+    def removeUser(self, user):
+        self.store.pop(user)

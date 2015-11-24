@@ -54,16 +54,16 @@
       </div> <!-- matrix-input -->
       <paper-button onclick="fillZeroes()" style="text-transform: none; margin-top: 10px" raised>Fill Empty Cells with Zeroes</paper-button>
       <div class="error">
-	{{ error }}
+	{{ error | safe }}
       </div>
-      {% if q in detailed %}
+      {# % if q in detailed %}
 	<div class="detail">
 	  <input type="hidden" name="detail" id="detail" value="true">
 	  <paper-checkbox onclick="var bool = document.getElementById('detail').value; document.getElementById('detail').value = (this.checked ? 'false': 'true');">Show Detailed Solution</paper-checkbox>
 	</div>
-      {% endif %}
+      {% endif % #}
       <div class="submit flex-container greenborder">
-	<paper-button id="paper-submit" style="background: #03A9F4; color: white; margin-top: 10px" onclick="this.getElementsByTagName('button')[0].click();" raised><button type="submit">Calculate</button></paper-button>
+        <paper-button id="paper-submit" style="background: #03A9F4; color: white; margin-top: 10px" onclick="paperSubmit(this)" raised><button type="submit">Calculate</button></paper-button>
       </div>
       {#% for p in range(num if q in ['mult', 'evaluate'] or num else 1) %}
 	<input type="hidden" name="r{{ p }}" value="{{ dim[p][0] }}">

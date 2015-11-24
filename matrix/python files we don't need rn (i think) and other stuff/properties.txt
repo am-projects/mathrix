@@ -1,6 +1,0 @@
-Some notable observations:
-
-// Nope. It actually gives 'v' or '-v' 
-1) When orthogonalizing a basis, if the n - 1 vectors are the same then the last vector can be anything doesn't matter, the answer's always the same.
-
-2) 

@@ -21,14 +21,45 @@
     <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
     
     <!-- Polymer imports -->
-    
+    <link rel="import" href="../bower_components/paper-button/paper-button.html">         
+    <link rel="import" href="../bower_components/polymer/polymer.html">    
     <link rel="import" href="../bower_components/iron-input/iron-input.html">
-    <link rel="import" href="../bower_components/paper-button/paper-button.html">
     <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
     <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
     <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
     <link rel="import" href="../bower_components/paper-input/paper-input.html">
     <link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+
+    {# <dom-module id="custom-button">
+      <link rel="import" href="../bower_components/paper-button/paper-button.html">
+      <template ref="{{ref}}">      
+        <style is="custom-style">
+        paper-button {
+	  background-color: var(--paper-blue-500);
+	  color: white;
+        }
+        </style>
+        <div class="my-button">
+          {{ ref }}
+          <a href="/mathrix/evaluate">
+            <paper-button raised>
+              <content></content>
+            </paper-button>
+          </a>
+        </div>
+      </template>
+      <script>
+      Polymer({
+        is: 'custom-button',
+        properties: {
+          ref: {
+            type: String,
+            value: "/mathrix/evaluate"
+          }
+        }
+      });
+      </script>
+    </dom-module> #}
 
 
 
@@ -57,9 +88,14 @@
     }
     </style>
 
+    <script type="text/javascript">
+    document.getElementById('paper-submit').onclick="paperSubmit()";
+    </script>
+
+    <script language="javascript" type="text/javascript" src="/static/js/paper-submit.js"></script>
 
     {% block addons %}
-
+      
       <style is="custom-style">
       paper-button {
 	background-color: var(--paper-blue-500);
@@ -73,7 +109,7 @@
     <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                             m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
     ga('create', 'UA-66886788-1', 'auto');
@@ -82,6 +118,8 @@
     </script>
   </head>
 
+  <!-- Body of Page -->
+  
   <body>
 
     <!-- Google Tag Manager -->
@@ -89,7 +127,7 @@
 		      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 							  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-							    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+							                                            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-KK5X7T');</script>
     <!-- End Google Tag Manager -->
@@ -112,22 +150,23 @@
 	<!-- Block gets replaced when the HTML file is inherited by another containing the same block -->
 	
 	<div class="content">
-	  
+
 	  {% block inputblock %}
-	    <div id="eval-button"><a href="/mathrix/evaluate"><paper-button raised>Evaluate Expression</paper-button></a></div>
+	    <div class="my-button"><a href="/mathrix/evaluate"><paper-button raised>Evaluate Expression</paper-button></a></div>
+            {# <paper-button raised><a href="/mathrix/evaluate" style="text-decoration: none; margin: inherit">Evaluate Expression</a></paper-button> #}
 	    
 	    <!-- Grid for frontpage -->
             
-             <div class="row flex-container greenborder">
-          	<div class="col-md-6 flex-container greenborder">
-          	  {% for op in f[:3] %} <!-- Iterate through the next 3 operaions -->	    
-          	    <a href="/mathrix/num?q={{ op[1] }}">
-                      <button type="button" class="btn btn-default operation-{{ op[1] }}">{{ op[0] }}</button>
-                    </a>
-          	  {% endfor %}
-          	</div>
-             </div>
-             
+            <div class="row flex-container greenborder">
+              <div class="col-md-6 flex-container greenborder">
+          	{% for op in f[:3] %} <!-- Iterate through the next 3 operaions -->	    
+          	  <a href="/mathrix/num?q={{ op[1] }}">
+                    <button type="button" class="btn btn-default operation-{{ op[1] }}">{{ op[0] }}</button>
+                  </a>
+          	{% endfor %}
+              </div>
+            </div>
+            
             {% for i in range(1, (f|length // 3) + 1) %}  <!-- Iterate through  0 - length(f) / 3 -->
               <div class="row flex-container greenborder">
           	<div class="col-md-6 flex-container greenborder">
@@ -142,13 +181,11 @@
 
   	    <!-- Frontpage message-->
 	    <div class="about text-center">
-      	      Want to calculate RREF of a 5x5 matrix?  Want to multiply 2  matrices? You can use this calculator and avoid all tedious computations.</div>
+      	      Want to calculate RREF of a 5x5 matrix?  Want to multiply 2  matrices? You can use this calculator and avoid all tedious computations.
+            </div>
 	  {% endblock %}
 	</div> 
-	<div>
-	  <p class="note row">Note: This website is still in testing phase and much of the CSS styling is left</p>
-	</div>
-
+	
 	<a href="/mathrix/evaluate" class="fab"><paper-fab mini icon="create"></paper-fab></a>
 
 	<footer>

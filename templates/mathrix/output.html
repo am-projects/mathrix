@@ -12,16 +12,7 @@
   <link rel="import" href="../bower_components/paper-card/paper-card.html">
   <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
-  {% if q in detailed %}
-    {# <script language="javascript" type="text/javascript" src="/static/js/output.js"></script> #}
-
-    <script type="text/javascript">
-    function showHide(dom) {
-      document.getElementById('result-small').style.display =  dom.active ? 'none' : 'block';
-      document.getElementById('result-full').style.display =  dom.active ? 'block' : 'none';
-    }
-    </script>
-  {% endif %}
+  <script language="javascript" type="text/javascript" src="/static/js/output.js"></script>
 
   <style is="custom-style">
   paper-card {
@@ -29,13 +20,15 @@
     width: 100%;
   }
   #detail {
-    background: var(--paper-light-green-300);
-  }
-  #detail[toggles][active] {
-    background: var(--paper-light-green-500);
+    background: var(--paper-teal-300);
   }
   </style>
 
+  <script>
+  function hide(dom) {
+    dom.style = (dom.style == "display: block") ? "display: none" : "display: block";
+  }
+  </script>
 {% endblock %}
 
 
@@ -48,92 +41,43 @@
 
     <div style="margin: auto;"><paper-card heading="$$ \textit{Result} $$" elevation="1">
       <div class="card-content">
-        <paper-button id="detail" onclick="showHide(this); this.active = this.active ? 'true' : ''" toggles>Show Detailed Solution</paper-button>
-        <div class="final" id="result-small">
-          {% for p in range(ans|length) %}
-	    \begin{bmatrix}
-	    {% for i in ans[p] %}
-	      {% set row = loop %}
-	      {% for j in i %}
-	        {% if j != '' and j is number and j.is_integer() %}{{ j|int }}{% else %}{{ j }}{% endif %} {% if not loop.last %}&{% endif %}
-	      {% endfor %}
-	      {% if not loop.last %}\\{% endif %}
-	    {% endfor %}
-	    \end{bmatrix}
-          {% endfor %}
-        </div>
+        
+        <paper-button id="detail" toggles>Show Detailed Solution</paper-button>
+        
         <div class="final" id="result-full" style="display: none">
-	  \begin{array}{c{% if steps %}cc{% endif %}}
-	  
-	  {% if q == 'evaluate' %} {{ exp }} {% else %} A {% endif %} {% if soln %} & {% if 1 == soln[0][0]|length %} \vec{b} {% else %} B {% endif %} {% endif %} {% if steps %} & \text{Row Operations} {% endif %} \\
-	  
-	  {% for p in range(ans|length) %}
-	    \begin{bmatrix}
-	    {% for i in ans[p] %}
-	      {% set row = loop %}
-	      {% for j in i %}
-	        {% if j != '' and j is number and j.is_integer() %}{{ j|int }}{% else %}{{ j }}{% endif %} {% if not loop.last %}&{% endif %}
-	      {% endfor %}
-	      {% if not loop.last %}\\{% endif %}
-	    {% endfor %}
-	    \end{bmatrix}
-	    
-	    {% if soln %}		{# <!-- To display the detailed row reductions --> #}
-	      &
-	      \begin{bmatrix}
-	      {% for i in soln[p] %}
-	        {% set row = loop %}
-	        {% for j in i %}
-		  {% if j != '' and j is number and j.is_integer() %}{{ j|int }}{% else %}{{ j }}{% endif %} {% if not loop.last %}&{% endif %}
-	        {% endfor %}
-	        {% if not loop.last %}\\{% endif %}
-	      {% endfor %}
-	      \end{bmatrix}
-	    {% endif %}
-	    
-	    {% if steps %}
-	      &
-	      {{ steps[p] | safe }}
-	    {% endif %}
-	    {% if not loop.last %} \\ {% endif %}
-	  {% endfor %}
-	  \end{array}
 
-	  <!-- To show the spanning solution set -->
-	  {% if span %}
-	    
-	    \begin{matrix}
-	    \textit{Solution Set of} \quad [ \, A \, | \, {% if soln[-1][0]|length == 1 %} \vec{b} {% else %} B {% endif %} \, ] \quad \textit{ is } \quad
-	    
-	    {% for j in range(soln[-1][0]|length) %}
-	      \begin{bmatrix}
-	      {% for i in range(span|length) %}
-	        {{ span[i][j] | safe }} {% if not loop.last %} \\ {% endif %}
-	      {% endfor %}
-	      \end{bmatrix}
-	    {% endfor %}
-	    
-	    {% if span[0]|length > 1 %} +  \text{Span } \left\{ {% endif %}
-	    {% for j in range(soln[-1][0]|length, span[0]|length) %}
-	      \begin{bmatrix}
-	      {% for i in range(span|length) %}
-	        {{ span[i][j] | safe }} {% if not loop.last %} \\ {% endif %}
-	      {% endfor %}
-	      \end{bmatrix}
-	      {% if not loop.last %} \, , {% endif %}
-	    {% endfor %}
-	    {% if span[0]|length > 1 %} \right\} {% endif %}
-	    \end{matrix}
-	    
-	  {% endif %}
+          <div class="stepper">
+
+            {% set i = 1 %}
+            
+            {% for step in steps %}
+              {% if step == 'done' %}
+          </div>
+          <div class="stepper">
+            {# <paper-icon-button icon="clear" onclick="hide(this)" style="position: relative; margin-right: 0px; margin-top: 0px"></paper-icon-button> #}
+              {% else %}
+              <div>
+                $$ {{ i }}) \qquad {{ step | safe }} $$
+              </div>
+              {% set i = i + 1 %}
+              {% endif %}
+            {% endfor %}
+
+          </div>
+
         </div>
+        
+        <div class="final" id="result-small">
+          $$ {{ ans | safe }} $$
+        </div>
+
       </div>
     </paper-card></div>
 
   {% else %}
 
     <div class="error">
-      $$ \textit{ {{ ans }} } $$
+      $$ \textit{ {{ error | safe }} } $$
     </div>
 
   {% endif %}
@@ -174,3 +118,4 @@
     {% endif %}
     </span>#}
 -->
+

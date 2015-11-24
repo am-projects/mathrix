@@ -188,6 +188,12 @@ table.solution {
     margin-right: auto;
 }
 
+.my-button {
+    width: 15%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #eval-form {
     width: 25%;
     margin-left: auto;

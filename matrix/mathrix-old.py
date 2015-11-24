@@ -1,24 +1,27 @@
-import jinja2
-import os
 import webapp2
+import os
+import jinja2
+import sys
+import logging
 
 import expression
-import operations
-
-from error import Error
+from operations import func
 from expression import re, Expression
-from log import Log
 from store import Session
+from log import Log
 
 # from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), '../templates')
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape=True)
 
-# Turns on debugging if code is not being run in production mode
+# Debugging
 
 DEBUG = os.environ['SERVER_SOFTWARE'].startswith('Development')  # Debug environment
 
+
+def console(s):
+    sys.stderr.write('%s\n' % repr(s))
 
 # Floating point number check
 
@@ -79,13 +82,16 @@ special = ['mult', 'evaluate']
 users = Session()
 
 
-##############################
-
-# Handlers for Mathrix
-
-##############################
-
-"""Base Handler defining convenience template render functions"""
+def beautify(matrices):		# To display fractions
+    if not matrices:
+        return
+    M = [[[i for i in row] for row in A] for A in matrices]
+    for A in M:
+        for i in xrange(len(A)):
+            for j in xrange(len(A[0])):
+                if not isinstance(A[i][j], str):
+                    A[i][j] = func.make_frac(A[i][j])
+    return M
 
 
 class Handler(webapp2.RequestHandler):
@@ -111,32 +117,24 @@ class Handler(webapp2.RequestHandler):
 
     def log(self):
         Exp = self.Exp
-        Log.i("Expression to be evaluated: %s", Exp.exp)
+        logging.info("Expression to be evaluated: %s", Exp.exp)
         if Exp.dim:
-            Log.i("Dimensions of matrices are: %s", Exp.dim)
+            logging.info("Dimensions of matrices are: %s", Exp.dim)
         if Exp.matrices:
-            Log.i("Inputed matrices are: %s", Exp.matrices)
-
-"""
-Handler: /mathrix
-Renders the the front page
-"""
+            logging.info("Inputed matrices are: %s", Exp.matrices)
 
 
 class MainHandler(Handler):
     def get(self):
-        Log.get(self)
+        logging.info("MainHandler: GET")
         self.render("front.html")
 
-"""
-Handler: /mathrix/num
-Gets the number of matrices for add/sub/mult
-"""
+# Handler: /mathrix/num
 
 
 class MultipleMatrices(Handler):
     def get(self):
-        Log.get(self)
+        logging.info("MultipleMatrices: GET")
         q = self.request.get('q')
 
         if q not in multiple:	 # Goto home: Wrong operation
@@ -144,17 +142,10 @@ class MultipleMatrices(Handler):
 
         self.render("get_num.html", q=q)
 
-"""
-Handler: /mathrix?q=
-Gets the dimensions of input matrices
-"""
+# Handler: /mathrix
 
 
 class InputHandler(Handler):
-
-    def initialize(self, *a, **kw):
-        webapp2.RequestHandler.initialize(self, *a, **kw)
-        self.Exp = None
 
     def match(self, q):
         # q = self.request.get('q')
@@ -167,36 +158,37 @@ class InputHandler(Handler):
         # if num is '' and q in multiple:
         #    return self.redirect('/mathrix/num?q=%s' % q)
 
-        Log.i('Dimn %s with num %s', q, num)
+        logging.info('Dimn %s with num %s', q, num)
         if q not in total and num is not '':
             return self.home()
 
-        Log.i("Operation called: %s", q)
+        logging.info("Operation called: %s", q)
         num = 1 if q in single else (num or 2)
 
         user_id = self.request.get('user_id') or users.addUser(Expression(q=q, n=int(num)))
 
         try:
-            Exp = self.Exp = users.getUser(user_id)
+            Exp = self.Exp = users.getUser(int(user_id))
         except KeyError:
-            Log.e("Wrong Key: %s", user_id)
+            logging.error("Wrong Key: %s", user_id)
             return self.home()
 
-        Log.i("Created user - %s", user_id)
+        logging.info("Created user - %s", int(user_id))
 
         self.render("get_dimn.html", num=Exp.n, q=q, user_id=user_id,
                     double=double, exp=Exp.getExp(), unknowns=Exp.getVars())
 
     def get(self, q):
-        Log.get(self)
-        Log.i("Number of active users = %s" % users.users)
+        logging.info("InputHandler: GET")
+        logging.info("Number of active users = %s" % users.users)
         self.match(q)
 
     # For the obtaining the dimensions and rendering the matrix input
 
     def test(self, m, n, q='det', num='1'):
-        Log.e("Checking dimensions m:%s n:%s" % (m, n))
-        if operations.chk(m, n) or q not in total or not (num and num.isdigit()):
+        logging.error("Checking dimensions m:%s n:%s" % (m, n))
+        if func.chk(m, n) or q not in total or not (num and num.isdigit()):
+            # logging.error(self.request.get_all('q'))
             self.home()
             return
         return True
@@ -212,21 +204,23 @@ class InputHandler(Handler):
             # If operation works on only square matrices
             n = self.request.get('c' + str(i)) if q not in square else m
             if not self.test(m, n):
-                raise Error("All dimensions are required")
+                # error = 'All fields are required'
+                # self.Exp.dim.append(['', ''])
+                raise Exception("All dimensions are required")
             else:
                 dim.append([int(m), int(n)])
-        Log.i("Matrix dimensions are: %s", self.Exp.dim)
+        logging.info("Matrix dimensions are: %s", self.Exp.dim)
 
         # For add and sub, only one dimension set is taken
         if q == 'add' or q == 'sub':
             self.Exp.dim = [dim[0] for i in xrange(num)]
-        # Log.e('finding dimn ' + error)
+        # logging.error('finding dimn ' + error)
         # if not error:
         #    error = self.chk_dim(dim, q)
         # return dim
 
     def chk_dim(self, dim, q):
-        Log.e('Checking dimensions for ' + q)
+        logging.error('Checking dimensions for ' + q)
         if q in square:
             return 'Can be calculated only for square matrices' if dim[0][0] != dim[0][1] else ''
         elif q == 'mult':
@@ -240,21 +234,21 @@ class InputHandler(Handler):
         return ''
 
     def generateMatrices(self):
-        Log.i("MatrixHandler: Generating Matrices")
-        return [[[''] * n for _ in xrange(m)] for (m, n) in self.Exp.dim]
+        logging.info("MatrixHandler: Generating Matrices")
+        return [[['' for j in xrange(n)] for i in xrange(m)] for (m, n) in self.Exp.dim]
 
     def post(self, q):
-        Log.post(self)
+        logging.info("InputHandler: POST")
         user_id = self.request.get('user_id')
 
-        if user_id is '':
+        if user_id is '' or not user_id.isdigit():
             self.home()
             return
 
         try:
-            self.Exp = users.getUser(user_id)
+            self.Exp = users.getUser(int(user_id))
         except KeyError:
-            Log.wrongKey(user_id)
+            logging.error("Wrong Key: %s", user_id)
             return self.home()
         self.log()
         try:
@@ -266,10 +260,7 @@ class InputHandler(Handler):
         self.redirect('/mathrix/input?user_id=%s' % user_id)
 
 
-"""
-Handler: /mathrix/input
-Gets the input matrices
-"""
+# Handler: /mathrix/input
 
 
 class MatrixHandler(Handler):
@@ -277,16 +268,16 @@ class MatrixHandler(Handler):
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
         self.user_id = user_id = self.request.get('user_id')
-        if user_id is '':
+        if user_id is '' or not user_id.isdigit():
             self.home()
             return
-        Log.i("User: %s", user_id)
+        logging.info("User: %s", user_id)
         try:
-            self.Exp = users.getUser(user_id)
+            self.Exp = users.getUser(int(user_id))
         except KeyError:
-            Log.wrongKey(user_id)
+            logging.error("Wrong Key: %s", user_id)
             return self.home()
-        Log.i("Initialized MatrixHandler")
+        logging.info("Initialized MatrixHandler")
         self.log()
 
     def getMatrices(self):
@@ -309,17 +300,16 @@ class MatrixHandler(Handler):
         return error
 
     def get(self):
-        Log.get(self)
-        self.render("input.html", user_id=self.user_id,
-                    error=self.Exp.error, matrices=self.Exp.matrices,
+        logging.info("MatrixHandler: GET")
+        self.render("input.html", user_id=self.user_id, error=self.Exp.error, matrices=self.Exp.matrices,
                     q=self.Exp.q, exp=self.Exp.exp, unknowns=self.Exp.getVars())
 
     def post(self):
-        Log.post(self)
+        logging.info("MatrixHandler: POST")
 
         error = self.getMatrices()
         if error:
-            Log.e("MatrixHandler: Matrix Input Error")
+            logging.error("MatrixHandler: Matrix Input Error")
             self.get()
 
         return self.redirect('/mathrix/result?user_id=%s' % self.user_id)
@@ -330,16 +320,16 @@ class MatrixHandler(Handler):
 class EvalHandler(Handler):
 
     def get(self):
-        Log.get(self)
+        logging.info("EvalHandler: GET")
         self.render("evaluate.html")
 
     def post(self):
-        Log.post(self)
+        logging.info("EvalHandler: POST")
         exp = self.request.get('eval')
         try:
             Exp = Expression(exp=exp)
             user_id = users.addUser(Exp)
-            Log.i('Evaluate called for exp:%s' % exp)
+            logging.info('Evaluate called for exp:%s' % exp)
             return self.redirect('/mathrix/eval?user_id=%s' % user_id)
         except Exception as inst:
             self.render("evaluate.html", exp=exp, error=inst.args[0])
@@ -350,23 +340,22 @@ class OutputHandler(Handler):
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
         self.user_id = user_id = self.request.get('user_id')
-        if user_id is '':
-            Log.e("OutputHandler: User session Not Found")
+        if user_id is '' or not user_id.isdigit():
+            logging.error("OutputHandler: User session Not Found")
             self.home()
             return
-        Log.i("User: %s", user_id)
+        logging.info("User: %s", user_id)
         try:
-            self.Exp = users.getUser(user_id)
+            self.Exp = users.getUser(int(user_id))
         except KeyError:
             Log.wrongKey(user_id)
             return self.home()
         self.log()
 
-    # TODO: Remove this, not used for computation anymore
     # Performs the actual calculation
     def calc(self, op, matrices):
-        Log.i("Input matrices: %s", matrices)
-        f = getattr(operations, op)
+        logging.info("Input matrices: %s", matrices)
+        f = getattr(func, op)
         if op in detailed:
             return f(*matrices)
         result = f(*matrices[:2])
@@ -375,11 +364,11 @@ class OutputHandler(Handler):
         return result
 
     def post(self):
-        Log.post(self)
+        logging.info("OutputHandler: POST")
         self.get()
 
     def get(self):
-        Log.get(self)
+        logging.info("OutputHandler: GET")
         Exp = self.Exp
         matrices = Exp.matrices
 
@@ -387,33 +376,46 @@ class OutputHandler(Handler):
             return self.home()
 
         op = Exp.q
-        Log.i('Operation %s to be executed' % op)
-        ans = operations.Matrix([])
-        error = ''
-        Log.i("Loading...")
+        logging.info('Operation %s to be executed' % op)
+        soln, steps, error, span = None, None, None, None
+        logging.info("Loading...")
         self.render("loading.html")
+        logging.info("In detailed? (%s)", op)
+        logging.info("Detailed option: %s", self.request.get('detail'))
+        try:
+            if op == 'evaluate':
+                logging.info('Evaluating %s', Exp.exp)
 
-        retry = 2
-
-        while retry:
-            try:
-                retry -= 1
-                ans = expression.evaluate(Exp, {k: v for k, v in zip(Exp.getVars(), matrices)})
-                Log.i("Calculated result %s", ans)
-                Log.i("Steps %s", ans.steps)
-                break
-            except Error as inst:
-                Log.e("Calculation Error " + repr(inst))
-                error = inst.args[0]
-                break
-            except:
-                if retry == 0:
-                    return self.home()
-
+                ans = [expression.evaluate(Exp, {k: v for k, v in zip(Exp.getVars(), matrices)})]
+            elif op in detailed:
+                logging.info("Detailed solution for %s", op)
+                # matrices.append(True)
+                ans, steps, soln = self.calc(op, matrices + [True])
+                if op in solvable:
+                    span = func.span(ans[-1], soln[-1])
+                    span = beautify([span])[0]
+                soln = beautify(soln)
+            else:
+                logging.info("Calculating result")
+                ans = [self.calc(op, matrices)]
+                if op in solvable:
+                    span = ans[0]
+                    span = beautify([span])[0]
+                    ans, soln = [matrices[0]], [matrices[1]]
+                    soln = beautify(soln)
+            ans = beautify(ans)
+        except Exception as inst:
+            error = True
+            logging.error("Calculation Error " + repr(inst))
+            ans = inst.args[0]
+        except:
+            self.home()
+        logging.info("Calculated result")
+        # logging.error(steps)
+        msg = "The result is"
         self.response.clear()	 # To clear the 'loading' response
-
-        self.render("output.html", ans=str(ans), steps=ans.steps,
-                    error=error, q=op, exp=Exp.getExp())
+        self.render("output.html", msg=msg, ans=ans, steps=steps,
+                    soln=soln, error=error, span=span, q=op, exp=Exp.getExp())
 
 
 app = webapp2.WSGIApplication([
