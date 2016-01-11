@@ -1,29 +1,38 @@
-import hmac
-import hashlib
+import random
+import string
 
 from error import Error
 
-SECRET = 'QWERTY' # open('/matrix/secret.txt').read()
 
+sessionKeyChoice = string.ascii_letters
 
-# Encrypt user id preventing change between user sessions
-
-def encrypt(val):
-    return hmac.new(SECRET, str(val), hashlib.sha256).hexdigest()
+try:
+    random = random.SystemRandom()
+except NotImplementedError:
+    print "System PRNG is not available. Using the more predictable default one"
 
 
 # Storage class to create and track user sessions
 
 class Session(object):
-    MAX_SIZE = 10000	# Maximum number of active connections
+    MAX_SESSIONS = 10000	# Maximum number of active connections
 
     def __init__(self):
         self.store = {}
+        self.keymap = {}
         self.users = 1
 
+    # Generate a session key to prevent change between user sessions
+
+    def generateKey(self, val):
+        key = ''.join(random.choice(sessionKeyChoice) for _ in xrange(8))
+        self.keymap[val] = key
+        return key
+
     def addUser(self, Exp):
-        self.users = (self.users % self.MAX_SIZE) + 1
-        user = encrypt(self.users)
+        self.users = (self.users % self.MAX_SESSIONS) + 1
+        self.removeUser(self.users)	# Remove any previously stored user sessions
+        user = self.generateKey(self.users)
         self.store[user] = Exp
         return user
 
@@ -34,4 +43,6 @@ class Session(object):
             return self.store[user]
 
     def removeUser(self, user):
-        self.store.pop(user)
+        if self.keymap.get(user):
+            self.store.pop(self.keymap[user])
+
