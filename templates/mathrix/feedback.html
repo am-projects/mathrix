@@ -1,0 +1,36 @@
+{#-*- engine:django -*-#}
+{% extends "mathrix/front.html" %}
+
+{% block addons %}
+
+  <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+  <link rel="import" href="../bower_components/paper-input/paper-input.html">
+  <link rel="import" href="../bower_components/paper-card/paper-card.html">
+
+  <style is="custom-style">
+  paper-card {
+    background-color: var(--paper-light-blue-300);
+    width: 50%;
+    align: center;
+  }
+  </style>
+  
+{% endblock %}
+
+{% block inputblock %}
+
+  <form method="post">
+    <paper-card heading="Feedback Form" elevation="1">
+      <div class="card-content">
+        <div>
+          Wrong answers? Nasty bugs? or Love the website? We'll love to get your feedback
+        </div>
+        <paper-textarea minlength="20" maxlength="500" name="comment" placeholder="Comment..." required>
+        </paper-textarea>
+        <paper-input placeholder="Email(Optional)" name="email">
+        <input type="submit" value="Submit">
+      </div>
+    </paper-card>
+  </form>
+  
+{% endblock %}

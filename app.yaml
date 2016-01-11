@@ -15,6 +15,9 @@ handlers:
 - url: /bower_components
   static_dir: bower_components
 
+#- url: /mathrix/feedback
+#  script: matrix.feedback.app
+
 - url: /mathrix.*
   script: matrix.mathrix.app
 
