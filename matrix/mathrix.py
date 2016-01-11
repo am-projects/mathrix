@@ -1,121 +1,26 @@
-import jinja2
-import os
 import webapp2
 
-import expression
+import feedback
 import operations
 
 from error import Error
 from expression import re, Expression
+from handler import Handler, DEBUG
 from log import Log
+from operators import *
 from store import Session
 
-# from google.appengine.ext import db
-
-template_dir = os.path.join(os.path.dirname(__file__), '../templates')
-jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape=True)
-
-# Turns on debugging if code is not being run in production mode
-
-DEBUG = os.environ['SERVER_SOFTWARE'].startswith('Development')  # Debug environment
 
 
 # Floating point number check
 
 fl = re.compile(r'^[-]?\d+([.]\d*)?$')
 
-# All operations provided
-
-formulas = [('Add', 'add'),
-            ('Subtract', 'sub'),
-            ('Multiply', 'mult'),
-            ('Transpose', 'trans'),
-            ('RREF', 'rref'),
-            ('Determinant', 'det'),
-            ('Inverse', 'inv'),
-            ('Trace', 'tr'),
-            ('Adjoint', 'adj'),
-            ('Solve', 'solve'),
-            ('Eigenvalues', 'eigenval'),
-            ('Eigenvectors', 'eigenvec')]
-
-double = ['add', 'sub', 'mult', 'solve', 'cramer']      # Functions requiring 2 or more matrices
-
-multiple = ['add', 'sub', 'mult']
-
-primary = ['add', 'sub']
-
-single = [
-    'det',
-    'tr',
-    'trans',
-    'rref',
-    'inv',
-    'adj',
-    'eigenval',
-    'eigenvec']      # Functions requiring just 1 matrix
-
-total = [k[1] for k in formulas] + ['evaluate']	     # All function names
-
-square = [
-    'det',
-    'tr',
-    'adj',
-    'inv',
-    'eigenval',
-    'eigenvec']               # Functions requiring Square matrix
-
-detailed = ['inv', 'rref', 'solve']	     # Functions providing a detailed solution
-
-systems = ['cramer', 'solve']
-
-solvable = ['solve']
-
-special = ['mult', 'evaluate']
-
 
 # User Sessions
 
 users = Session()
 
-
-##############################
-
-# Handlers for Mathrix
-
-##############################
-
-"""Base Handler defining convenience template render functions"""
-
-
-class Handler(webapp2.RequestHandler):
-
-    def home(self):               # Easy redirection to homepage
-        self.redirect('/mathrix')
-
-    def write(self, *a, **kw):
-        self.response.write(*a, **kw)
-
-    def render_str(self, template, **params):
-        template = 'mathrix/' + template
-        params['f'] = formulas
-        params['square'] = square
-        params['detailed'] = detailed
-        params['systems'] = systems
-        params['double'] = double
-        t = jinja_env.get_template(template)
-        return t.render(params)
-
-    def render(self, template, **kw):
-        self.write(self.render_str(template, **kw))
-
-    def log(self):
-        Exp = self.Exp
-        Log.i("Expression to be evaluated: %s", Exp.exp)
-        if Exp.dim:
-            Log.i("Dimensions of matrices are: %s", Exp.dim)
-        if Exp.matrices:
-            Log.i("Inputed matrices are: %s", Exp.matrices)
 
 """
 Handler: /mathrix
@@ -139,7 +44,7 @@ class MultipleMatrices(Handler):
         Log.get(self)
         q = self.request.get('q')
 
-        if q not in multiple:	 # Goto home: Wrong operation
+        if q not in MULTIPLE_OP:	 # Goto home: Wrong operation
             self.home()
 
         self.render("get_num.html", q=q)
@@ -157,22 +62,17 @@ class InputHandler(Handler):
         self.Exp = None
 
     def match(self, q):
-        # q = self.request.get('q')
         q = 'evaluate' if q == 'eval' else q
         num = self.request.get('num')
         if not q:
             return self.home()
 
-        # Get number of matrices (redirect to /mathrix/num) for particular functions
-        # if num is '' and q in multiple:
-        #    return self.redirect('/mathrix/num?q=%s' % q)
-
         Log.i('Dimn %s with num %s', q, num)
-        if q not in total and num is not '':
+        if q not in ALL_OPS and num is not '':
             return self.home()
 
         Log.i("Operation called: %s", q)
-        num = 1 if q in single else (num or 2)
+        num = 1 if q in UNARY_OP else (num or 2)
 
         user_id = self.request.get('user_id') or users.addUser(Expression(q=q, n=int(num)))
 
@@ -185,7 +85,7 @@ class InputHandler(Handler):
         Log.i("Created user - %s", user_id)
 
         self.render("get_dimn.html", num=Exp.n, q=q, user_id=user_id,
-                    double=double, exp=Exp.getExp(), unknowns=Exp.getVars())
+                    double=BINARY_OP, exp=Exp.getExp(), unknowns=Exp.getVars())
 
     def get(self, q):
         Log.get(self)
@@ -196,7 +96,7 @@ class InputHandler(Handler):
 
     def test(self, m, n, q='det', num='1'):
         Log.e("Checking dimensions m:%s n:%s" % (m, n))
-        if operations.chk(m, n) or q not in total or not (num and num.isdigit()):
+        if operations.chk(m, n) or q not in ALL_OPS or not (num and num.isdigit()):
             self.home()
             return
         return True
@@ -209,8 +109,8 @@ class InputHandler(Handler):
             return
         for i in xrange(num if q not in primary else 1):
             m = self.request.get('r' + str(i))
-            # If operation works on only square matrices
-            n = self.request.get('c' + str(i)) if q not in square else m
+            # If operation works on only SQUARE_OP matrices
+            n = self.request.get('c' + str(i)) if q not in SQUARE_OP else m
             if not self.test(m, n):
                 raise Error("All dimensions are required")
             else:
@@ -220,15 +120,11 @@ class InputHandler(Handler):
         # For add and sub, only one dimension set is taken
         if q == 'add' or q == 'sub':
             self.Exp.dim = [dim[0] for i in xrange(num)]
-        # Log.e('finding dimn ' + error)
-        # if not error:
-        #    error = self.chk_dim(dim, q)
-        # return dim
 
     def chk_dim(self, dim, q):
         Log.e('Checking dimensions for ' + q)
-        if q in square:
-            return 'Can be calculated only for square matrices' if dim[0][0] != dim[0][1] else ''
+        if q in SQUARE_OP:
+            return 'Can be calculated only for SQUARE_OP matrices' if dim[0][0] != dim[0][1] else ''
         elif q == 'mult':
             r = dim[0][0]
             for m, n in dim:
@@ -326,6 +222,11 @@ class MatrixHandler(Handler):
 
 # Expression Evaluator
 
+"""
+Handler: /mathrix/evaluate
+Renders the evaluate expression page
+"""
+
 
 class EvalHandler(Handler):
 
@@ -346,6 +247,12 @@ class EvalHandler(Handler):
             return
 
 
+"""
+Handler: /mathrix/result
+Calculates and displays the result
+"""
+
+
 class OutputHandler(Handler):
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
@@ -361,18 +268,6 @@ class OutputHandler(Handler):
             Log.wrongKey(user_id)
             return self.home()
         self.log()
-
-    # TODO: Remove this, not used for computation anymore
-    # Performs the actual calculation
-    def calc(self, op, matrices):
-        Log.i("Input matrices: %s", matrices)
-        f = getattr(operations, op)
-        if op in detailed:
-            return f(*matrices)
-        result = f(*matrices[:2])
-        for A in matrices[2:]:
-            result = f(result, A)
-        return result
 
     def post(self):
         Log.post(self)
@@ -393,12 +288,12 @@ class OutputHandler(Handler):
         Log.i("Loading...")
         self.render("loading.html")
 
-        retry = 2
+        retry = 3
 
         while retry:
             try:
                 retry -= 1
-                ans = expression.evaluate(Exp, {k: v for k, v in zip(Exp.getVars(), matrices)})
+                ans = Exp.evaluate({k: v for k, v in zip(Exp.getVars(), matrices)})
                 Log.i("Calculated result %s", ans)
                 Log.i("Steps %s", ans.steps)
                 break
@@ -417,10 +312,11 @@ class OutputHandler(Handler):
 
 
 app = webapp2.WSGIApplication([
-    (r'/mathrix/result.*', OutputHandler),
-    (r'/mathrix/num.*', MultipleMatrices),
-    (r'/mathrix/input.*', MatrixHandler),
-    (r'/mathrix/evaluate.*', EvalHandler),
+    (r'/mathrix/result', OutputHandler),
+    (r'/mathrix/num', MultipleMatrices),
+    (r'/mathrix/input', MatrixHandler),
+    (r'/mathrix/evaluate', EvalHandler),
+    (r'/mathrix/feedback', feedback.FeedbackHandler),
     (r'/mathrix/([a-z]+)', InputHandler),
     (r'/mathrix', MainHandler)
 ], debug=DEBUG)
