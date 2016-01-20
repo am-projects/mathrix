@@ -86,6 +86,11 @@
     #paper-submit button::-moz-focus-inner {
       border: 0;
     }
+    .fab {
+      position: fixed;
+      right: 10%;
+      bottom: 10%;
+    }
     </style>
 
     <script type="text/javascript">
@@ -181,7 +186,7 @@
 
   	    <!-- Frontpage message-->
 	    <div class="about text-center">
-      	      Want to calculate RREF of a 5x5 matrix?  Want to multiply 2  matrices? You can use this calculator and avoid all tedious computations.
+      	      Want to calculate RREF of a 5x5 matrix?  Want to multiply 2 or more matrices? You can use this calculator and avoid all tedious computations.
             </div>
 	  {% endblock %}
 	</div> 
@@ -190,7 +195,11 @@
 
 	<footer>
 	  &copy; Arshia and Milap. 2015
+          <a href="https://github.com/am-projects/mathrix"><img src="/static/images/github.png" alt="Github" height="30" width="30"></a>
 	</footer>
+        <div class="feedback-link">
+          <a href="/mathrix/feedback">Feedback</a>
+        </div>
       </div>
     </div>
     <!-- jQuery and JavaScript-->

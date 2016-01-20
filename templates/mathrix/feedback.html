@@ -11,7 +11,16 @@
   paper-card {
     background-color: var(--paper-light-blue-300);
     width: 50%;
-    align: center;
+    @apply(--layout-center);
+    --paper-card-header {
+      @apply(--layout-center);
+    }
+  }
+  .cardcontent {
+    text-align: center;
+    width: 20%;
+    margin-left: auto;
+    margin-right: auto;
   }
   </style>
   
@@ -27,8 +36,8 @@
         </div>
         <paper-textarea minlength="20" maxlength="500" name="comment" placeholder="Comment..." required>
         </paper-textarea>
-        <paper-input placeholder="Email(Optional)" name="email">
-        <input type="submit" value="Submit">
+        <paper-input placeholder="Email(Optional)" name="email"></paper-input>
+        <paper-button id="paper-submit" style="background: #03A9F4; color: white; margin-top: 10px" onclick="paperSubmit(this)" raised><button type="submit">Submit</button></paper-button>
       </div>
     </paper-card>
   </form>

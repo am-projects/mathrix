@@ -1,3 +1,8 @@
+"""
+mathrix.py is responsible for handling the HTTP requests made by users
+"""
+
+
 import webapp2
 
 import feedback
@@ -89,6 +94,8 @@ class InputHandler(Handler):
 
     def get(self, q):
         Log.get(self)
+        if q not in ALL_OPS:
+            return self.home()
         Log.i("Number of active users = %s" % users.users)
         self.match(q)
 
@@ -248,6 +255,18 @@ class EvalHandler(Handler):
 
 
 """
+Handler: /mathrix/evaluate/help
+Renders the help page for evaluating expression
+"""
+
+
+class HelpHandler(Handler):
+    def get(self):
+        Log.get(self)
+        self.render("help.html")
+
+
+"""
 Handler: /mathrix/result
 Calculates and displays the result
 """
@@ -315,6 +334,7 @@ app = webapp2.WSGIApplication([
     (r'/mathrix/result', OutputHandler),
     (r'/mathrix/num', MultipleMatrices),
     (r'/mathrix/input', MatrixHandler),
+    (r'/mathrix/evaluate/help', HelpHandler),
     (r'/mathrix/evaluate', EvalHandler),
     (r'/mathrix/feedback', feedback.FeedbackHandler),
     (r'/mathrix/([a-z]+)', InputHandler),

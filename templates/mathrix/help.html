@@ -1,0 +1,19 @@
+{#-*- engine:django -*-#}
+{% extends "mathrix/front.html" %}
+
+
+{% block inputblock %}
+
+  <div style="widht: 70%; text-align: center">
+    <br>
+    <h4>Specs:</h4>
+    <br>
+
+    Variable Names - Capital letter (eg. A, C, X)
+    <br>
+    Operations - +, - , *, tr, det, trans, adj, inv, id(n) (identity matrix of dimn n), rows(A) (number of rows in A), cols(A) (number of columns in A)
+    <br>
+    Expression example   <emphasize>det(inv(A * trans(A)) - id(rows(A)))</emphasize>
+  </div>
+
+{% endblock %}

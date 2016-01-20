@@ -37,13 +37,14 @@
 	{% for A in matrices %}       <!-- All Entered Matrices -->
 	  {% set p = loop %}
 	  <div class="new-matrix">
+            Enter matrix {{ unknowns[p.index0] }}
 	    <table class="greenborder custom-table">
     	      {% for i in A %}
     		{% set row = loop %}
     		<tr>
     		  {% for j in i %}
     		    <td>
-    		      <paper-input class="matrix-cell" name="A[{{ p.index0 }}][{{ row.index0 }}][{{ loop.index0 }}]" pattern="^([-][0-9])?[0-9]*([.][0-9]*)?$" label="a{{ row.index0 }}{{ loop.index0 }}" value={% if j != '' and j.is_integer() %}"{{ j|int }}"{% else %}"{{ j }}"{% endif %} auto-validate required>
+    		      <paper-input class="matrix-cell" name="A[{{ p.index0 }}][{{ row.index0 }}][{{ loop.index0 }}]" pattern="^([-][0-9])?[0-9]*([.][0-9]*)?$" label="{{ unknowns[p.index0] }}{{ row.index0 }}{{ loop.index0 }}" value={% if j != '' and j.is_integer() %}"{{ j|int }}"{% else %}"{{ j }}"{% endif %} auto-validate required>
     		    </td>
     		  {% endfor %}
     		</tr>
@@ -52,7 +53,7 @@
 	  </div> <!-- new-matrix -->
 	{% endfor %}
       </div> <!-- matrix-input -->
-      <paper-button onclick="fillZeroes()" style="text-transform: none; margin-top: 10px" raised>Fill Empty Cells with Zeroes</paper-button>
+      <paper-button onclick="fillZeroes()" style="text-transform: none; margin-top: 10px;" raised>Fill Empty Cells with Zeroes</paper-button>
       <div class="error">
 	{{ error | safe }}
       </div>

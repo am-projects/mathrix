@@ -42,9 +42,9 @@ def result(ans, step, *steps):
 
 
 class Matrix(object):
-    def __init__(self, M, steps=[]):
+    def __init__(self, M, steps=None):
         self.M = M
-        self.steps = steps
+        self.steps = steps or []
 
     def __getitem__(self, index):
         return self.M[index]
@@ -85,7 +85,6 @@ class Matrix(object):
             res.steps = self.steps + other.steps
         res.steps.append(str(self) + ' * ' + str(other) + ' = ' + str(res))
         res.steps.append('done')
-        print "Mult steps", res.steps
         return res
 
     # Called when multiplying a non-Matrix object with a Matrix object
@@ -186,13 +185,17 @@ def unit(v):
     return result([[v[i][0] / val] for i in xrange(len(v))],
                   r'\hat{' + str(v) + '} = %s', v)
 
+def rows(M):
+    return len(M)
+
+def cols(M):
+    return len(M[0])
 
 # Matrix Functions
 
 # Transpose
 
 def trans(A):
-    print "trans: ", A.steps
     return result([[A[i][j] for i in xrange(len(A))] for j in xrange(len(A[0]))],
                   str(A) + '^T = %s',
                   A)
@@ -222,20 +225,6 @@ def minor(X, i, j):
     del y[j - 1]
     return zip(*y)
 
-"""
-def deter(M, i = 0, j = 0, k = {}, c = 0):
-    if j == len(M[0]):
-        return 0
-    elif k.get(j):
-        return deter(M, i, j + 1, k, c)
-    elif i == (len(M) - 1):
-        return M[i][j]
-    else:
-        u = {key:val for key,val in k.items()}
-        u[j] = len(k)
-        return (((-1) ** c) * M[i][j] * deter(M, i + 1, 0, u)) + deter(M, i, j + 1, k, c + 1)
-"""
-
 
 def det(M):
     return result([[deter(M)]],
@@ -256,7 +245,9 @@ def isSymmetric(A):
 def inv(A):
     if deter(A.M) == 0:
         raise Error("Matrix is NOT INVERTIBLE")
-    return solve(A, identity(len(A)))
+    res = solve(A, identity(len(A)))
+    res.steps[-2] = "%s^{-1} = %s" % (A, res)
+    return res
 
 
 # Adjoint Matrix
@@ -331,10 +322,8 @@ def span(A, d):
                 break
             M[cols[k]][i + soln] = -A[k][j]
 
-    if len(M[0]) == 0:
-        return result(d.M, r'Solution of system ' + str(A) + r' \quad ' + str(d) + ' is %s', A, d)
-    else:
-        return result(M, r'Solution of system ' + str(A) + r' \quad ' + str(d) + ' is %s', A, d)
+    return Matrix(d.M, A.steps + d.steps) if len(M[0]) == 0 else Matrix(M, A.steps + d.steps)
+
 
 # RREF
 # @param A: Matrix, Y: A Similar matrix
@@ -347,20 +336,21 @@ def rref(A, Y=Matrix([])):
     if Y.M == []:
         req = False
         Y.M = [[0.0] for i in xrange(len(M))]
-    X = Matrix(Y.M, Y.steps)
+    X = Matrix(Y.M[:], Y.steps)
     ans = [M[:]]
-    steps = ['']
+    steps = []
     soln = [X[:]]
     lead = 0
     rowCount = len(M)
     columnCount = len(M[0])
 
     def calc():
+        steps.append('')
         res = Matrix(ans[-1])
         res.soln = Matrix(soln[-1])
         res.steps = A.steps + X.steps + \
-                    [latexify(P) + r' \quad ' + s + r' \quad ' + (latexify(sol) if req else '')
-                     for P, s, sol in zip(ans, steps, soln)]
+                    [('detail', step, latexify(P) + r' \quad \quad ' + (latexify(sol) if req else ''))
+                     for P, step, sol in zip(ans, steps, soln)]
         return res
 
     for r in xrange(rowCount):
@@ -421,37 +411,58 @@ def solve(A, x):
         if any(x != 0 for x in res.soln[-i]):		# If corresponding b_i is non-zero
             raise Error("No Solution Exists")
         i += 1
-    return span(res, res.soln)
+    return result(span(res, res.soln),
+                  r"\text{Solution of System }" + str(A) + r' \quad ' + str(x) + r' is \, %s')
+
 
 # Fundamental Subspaces
 # @param A: Matrix
 
-def subspaces(A, q):
+def subspaces(A):
     R = rref(A)
 
-    # Subspaces returned in this sequence, [Col(A), Row(A), Null(A), Null(A^T)]
+    colSpace = col(A)
+    rowSpace = row(A, R)
+    nullSpace = null(A, R)
+    lnullSpace = lnull(A)
 
-    ans = [[[] for i in xrange(len(A))], [[] for i in xrange(len(A[0]))]]
+    return [colSpace, rowSpace, nullSpace, lnullSpace]
 
-    cols = rank(R, True)
 
-    for i, c in enumerate(cols):
-        if q == 'Col':
-            for k in xrange(len(A)):  # Column space
-                ans[0][k].append(A[k][c])
-        if q == 'Row':
-            for k in xrange(len(A[0])):  # Row space
-                ans[1][k].append(R[i][k])
+# Column Space
 
-    if q == 'Null':
-        ans.append(span(R, [[0] for i in xrange(len(R))]))  # Null space
-    if q == 'LNull':
-        ans.append(span(rref(trans(A)), [[0] for i in xrange(len(R[0]))]))  # Left Null space
+def col(A):
+    ans = [[] for _ in xrange(len(A))]
+    cols = rank(A, True)
+    for c in cols:
+        for k in xrange(len(A)):  # Column space
+            ans[k].append(A[k][c])
+    return result(ans, r'Col \left( ' + str(A) + r' \right) = %s', A)
 
-    return result(ans, q + r'\left( %s \right)', A)
+
+# Row Space
+
+def row(A, R=None):
+    ans = [[] for i in xrange(len(A[0]))]
+    if R is None:
+        R = rref(A)
+    for i in xrange(rank(A)):
+        for k in xrange(len(A[0])):
+            ans[k].append(R[i][k])
+    return result(ans, r'Row \left( ' + str(A) + r' \right) = %s', A)
+
+
+# Null Space
+
+def null(A, R=None):
+    if R is None:
+        R = rref(A)
+    return span(R, [0] * len(R))
+
+def lnull(A):
+    return span(rref(trans(A)), [0] * len(R))
 
 # Eigenvalues
-
 
 def eigenval(A):
     ans = call_api('eigenvalues of %s' % str(A))[0]
@@ -674,7 +685,74 @@ def svd(M):
     if any(val != [0] for val in lnullA):
         orthoA =  orthogonalize(lnullA)
         U = result(map(list.__add__, U, orthoA), '%s', U, orthoA)
-    print sing
     S = Matrix([[sing[i] if i == j else 0 for j in xrange(len(M[0]))] for i in xrange(len(M))])
 
     return (V, S, U) if len(A) < len(A[0]) else (U, S, V)
+
+
+
+"""
+Exporting functions that are available for the user
+"""
+
+# Map function names to the functions themselves
+
+functions = {
+    '__builtins__': __builtins__,
+    'Matrix': Matrix,
+    '__package__': __package__,
+    'adj': adj,
+    'col': col,
+    'cols': cols,
+    'cramer': cramer,
+    'det': det,
+    'diagonalize': diagonalize,
+    'dot': dot,
+    'eigenval': eigenval,
+    'id': identity,
+    'inv': inv,
+    'lnull': lnull,
+    'norm': norm,
+    'null': null,
+    'orthodiagonalize': orthodiagonalize,
+    'orthogonalize': orthogonalize,
+    'rank': rank,
+    'row': row,
+    'rows': rows,
+    'rref': rref,
+    'solve': solve,
+    'subspaces': subspaces,
+    'svd': svd,
+    'tr': tr,
+    'trans': trans,
+    'triangularize': triangularize,
+    'unit': unit
+}
+
+# Map function names to function and number of arguments
+
+funcs = {
+    '+': lambda A, B: A + B,
+    '-': lambda A, B: A - B,
+    '*': lambda A, B: A * B,
+    '/': lambda A, k: A / k,
+    '^': lambda A, x: A ^ x,
+    'rref': (rref, 1),
+    'det': (det, 1),
+    'inv': (inv, 1),
+    'id': (identity, 1),
+    'solve': (solve, 2),
+    'dot': (dot, 2),
+    'norm': (norm, 1),
+    'unit': (unit, 1),
+    'trans': (trans, 1),
+    'tr': (tr, 1),
+    'adj': (adj, 1),
+    'cramer': (cramer, 1),
+    'rank': (rank, 1),
+    'col': (col, 1),
+    'row': (row, 1),
+    'null': (null, 1),
+    'lnull': (lnull, 1),
+    '': (id, 1)
+}

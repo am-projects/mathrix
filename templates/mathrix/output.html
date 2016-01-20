@@ -22,13 +22,14 @@
   #detail {
     background: var(--paper-teal-300);
   }
+  .exp {
+    text-align: center;
+    width: 20%;
+    margin-left: auto;
+    margin-right: auto;
+  }
   </style>
 
-  <script>
-  function hide(dom) {
-    dom.style = (dom.style == "display: block") ? "display: none" : "display: block";
-  }
-  </script>
 {% endblock %}
 
 
@@ -42,24 +43,31 @@
     <div style="margin: auto;"><paper-card heading="$$ \textit{Result} $$" elevation="1">
       <div class="card-content">
         
+        <div class="exp">
+          $$ \large{ {{ exp }} } $$
+        </div>
+          
         <paper-button id="detail" toggles>Show Detailed Solution</paper-button>
         
         <div class="final" id="result-full" style="display: none">
 
           <div class="stepper">
-
-            {% set i = 1 %}
             
             {% for step in steps %}
               {% if step == 'done' %}
           </div>
           <div class="stepper">
-            {# <paper-icon-button icon="clear" onclick="hide(this)" style="position: relative; margin-right: 0px; margin-top: 0px"></paper-icon-button> #}
+              {% elif step is not string and step[0] == 'detail' %}
+          </div>
+          <div class="stepper">
+            $$ {{ step[2] | safe }} $$
+          </div>
+          <div class="detail">
+            $$ {{ step[1] | safe }} $$
               {% else %}
               <div>
-                $$ {{ i }}) \qquad {{ step | safe }} $$
+                $$ {{ step | safe }} $$
               </div>
-              {% set i = i + 1 %}
               {% endif %}
             {% endfor %}
 
@@ -68,7 +76,7 @@
         </div>
         
         <div class="final" id="result-small">
-          $$ {{ ans | safe }} $$
+          $$ \mathbf{ {{ ans | safe }} } $$
         </div>
 
       </div>

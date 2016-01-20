@@ -32,4 +32,4 @@ class FeedbackHandler(Handler):
         sender = self.request.get('email')
         message.sender = SENDER_TEMPLATE.format(sender or default)
         message.send()
-        self.render("feedback.html")
+        self.render("thanks.html")
