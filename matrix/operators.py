@@ -5,13 +5,13 @@ OPERATIONS = [('Add', 'add'),
               ('Multiply', 'mult'),
               ('Transpose', 'trans'),
               ('RREF', 'rref'),
-              ('Determinant', 'det'),
+              ('Det', 'det'),
               ('Inverse', 'inv'),
               ('Trace', 'tr'),
               ('Adjoint', 'adj'),
               ('Solve', 'solve'),
-              ('Eigenvalues', 'eigenval'),
-              ('Eigenvectors', 'eigenvec')]
+              ('Eigenval', 'eigenval'),
+              ('Eigenvec', 'eigenvec')]
 
 # Functions requiring 2 or more matrices
 BINARY_OP = ['add', 'sub', 'mult', 'solve', 'cramer']
