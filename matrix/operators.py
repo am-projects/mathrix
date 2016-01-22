@@ -30,7 +30,7 @@ UNARY_OP = [
     'eigenval',
     'eigenvec']      # Functions requiring just 1 matrix
 
-ALL_OPS = [k[1] for k in OPERATIONS] + ['evaluate']	     # All function names
+ALL_OPS = [k[1] for k in OPERATIONS] + ['evaluate', 'eval']	     # All function names
 
 SQUARE_OP = [
     'det',

@@ -67,6 +67,7 @@ class InputHandler(Handler):
         self.Exp = None
 
     def match(self, q):
+        Log.i("match() called")
         q = 'evaluate' if q == 'eval' else q
         num = self.request.get('num')
         if not q:
@@ -94,6 +95,7 @@ class InputHandler(Handler):
 
     def get(self, q):
         Log.get(self)
+        Log.i("Operation: %s called", q)
         if q not in ALL_OPS:
             return self.home()
         Log.i("Number of active users = %s" % users.users)
