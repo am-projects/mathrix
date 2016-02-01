@@ -457,10 +457,11 @@ def row(A, R=None):
 def null(A, R=None):
     if R is None:
         R = rref(A)
-    return span(R, [0] * len(R))
+    return span(R, Matrix([[0]] * len(R)))
 
 def lnull(A):
-    return span(rref(trans(A)), [0] * len(R))
+    R = rref(trans(A))
+    return span(R, Matrix([[0]] * len(R)))
 
 # Eigenvalues
 

@@ -18,7 +18,7 @@
     <paper-card heading="Enter the Expression" style="text-align: center; width: 100%; margin-left: auto; margin-right: auto">
       <div class="card-content">
 	<div class="eval-exp">
-	  <paper-input label="eg. det(inv(A * trans(A)) - id(rows(A)))" error-message="Invalid Expression!" pattern="[A-Za-z0-9()[\]{}^*+\-\\. ]+" name="eval" value="{{ exp }}" style="width: 100%; margin-bottom: 10px" auto-validate required></paper-input>
+	  <paper-input label="eg. det(inv(A * trans(A)) - id(rows(A)))" error-message="Invalid Expression!" pattern="[A-Za-z0-9()[\]{}^*+\-\\., ]+" name="eval" value="{{ exp }}" style="width: 100%; margin-bottom: 10px" auto-validate required></paper-input>
 	</div>
 	<div style="width: 30%; margin-left: auto; margin-right: auto">
 	  <paper-button onclick="this.getElementsByTagName('button')[0].click();" raised id="paper-submit" style="background: #03A9F4; color: white;"><button type="submit">Calculate</button></paper-button>
